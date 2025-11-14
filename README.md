@@ -1,16 +1,6 @@
 # Vehicle Parking Management System
 A Flask-based parking management application with MySQL database backend, featuring automated business logic through triggers, stored procedures, and functions.
 
-## Team Members
-- **T. Lohith Srinivas** - PES2UG23CS???
-- **Sanjit Dev Maheswaran** - PES2UG23CS531
-- **Shreyas Kodithyala** - PES2UG23CS563
-
-**Course:** UE23CS351A - DBMS Project  
-**Institution:** PES University, Electronic City Campus  
-**Semester:** AUG - DEC 2025  
-**Guided by:** Prof. Shilpa S
-
 ## Features
 
 ### Parking Management
@@ -181,10 +171,3 @@ PROJECT/
 └── .env                      # Database configuration
 ```
 
-## Acknowledgments
-
-**Guided by:** Prof. Shilpa S, Assistant Professor, Department of CSE, PES University
-
-**Institution:** PES University, Electronic City Campus  
-**Course:** UE23CS351A - DBMS Project  
-**Semester:** AUG - DEC 2025
