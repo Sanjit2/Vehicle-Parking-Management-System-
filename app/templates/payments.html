@@ -1,0 +1,48 @@
+{% extends 'base.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Payments</h1>
+  <a class="btn btn-primary" href="/payments/new">Add Payment</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Amount</th>
+      <th>Method</th>
+      <th>Status</th>
+      <th>Ticket</th>
+      <th>Timestamp</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in payments %}
+    <tr>
+      <td>{{ p.PaymentID }}</td>
+      <td>{{ p.Amount }}</td>
+      <td>{{ p.PaymentMethod }}</td>
+      <td>{{ p.TransactionStatus }}</td>
+      <td>{{ p.TicketID }}</td>
+      <td>{{ p.PaymentTimestamp }}</td>
+      <td class="text-nowrap">
+        <a
+          class="btn btn-sm btn-outline-secondary"
+          href="/payments/{{ p.PaymentID }}/edit"
+          >Edit</a
+        >
+        <form
+          method="post"
+          action="/payments/{{ p.PaymentID }}/delete"
+          class="d-inline"
+          onsubmit="return confirm('Delete payment #{{ p.PaymentID }}?')"
+        >
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+

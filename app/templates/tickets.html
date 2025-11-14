@@ -1,0 +1,188 @@
+{% extends 'base.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Tickets</h1>
+  <a class="btn btn-primary" href="/tickets/new">New Ticket</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Entry</th>
+      <th>Exit</th>
+      <th>Status</th>
+      <th>Fee</th>
+      <th>Plate</th>
+      <th>Spot</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in tickets %}
+    <tr>
+      <td>{{ t.TicketID }}</td>
+      <td>{{ t.EntryTime }}</td>
+      <td>{{ t.ExitTime or '-' }}</td>
+      <td>{{ t.PaymentStatus }}</td>
+      <td>{{ t.TotalFee or '-' }}</td>
+      <td>{{ t.LicensePlate }}</td>
+      <td>{{ t.SpotID }}</td>
+      <td class="text-nowrap">
+        <!-- Frontend helpers to call DB procedures via the server -->
+        <button
+          class="btn btn-sm btn-outline-success me-1 open-exit-btn"
+          data-ticket-id="{{ t.TicketID }}"
+        >
+          Exit &amp; Pay
+        </button>
+        <button
+          class="btn btn-sm btn-outline-warning me-1 open-swap-btn"
+          data-ticket-id="{{ t.TicketID }}"
+          data-lot-id="{{ t.spot.LotID if t.spot else '' }}"
+          data-current-spot="{{ t.spot.SpotNumber if t.spot else '' }}"
+        >
+          Swap Spot
+        </button>
+        <a
+          class="btn btn-sm btn-outline-secondary"
+          href="/tickets/{{ t.TicketID }}/edit"
+          >Edit</a
+        >
+        <form
+          method="post"
+          action="/tickets/{{ t.TicketID }}/delete"
+          class="d-inline"
+          onsubmit="return confirm('Delete ticket #{{ t.TicketID }}?')"
+        >
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} {% block scripts %}
+<!-- Swap Spot Modal -->
+<div class="modal fade" id="swapModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Swap Spot</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Choose available spot</label>
+          <select id="swapSpotSelect" class="form-select"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          id="confirmSwapBtn"
+          type="button"
+          class="btn btn-primary"
+          onclick="ParkingSystem.confirmSwapFromModal()"
+        >
+          Confirm Swap
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Exit & Pay Modal -->
+<div class="modal fade" id="exitModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Process Exit &amp; Payment</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>Ticket #: <strong id="exitTicketId"></strong></p>
+        <p>Estimated total: <strong id="exitEstimatedTotal"></strong></p>
+        <div class="mb-3">
+          <label class="form-label">Amount to pay</label>
+          <input
+            id="exitAmountInput"
+            type="number"
+            step="0.01"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Payment method</label>
+          <select id="exitMethodSelect" class="form-select">
+            <option>Cash</option>
+            <option>Credit Card</option>
+            <option>UPI</option>
+            <option>AppWallet</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button
+          id="confirmExitBtn"
+          type="button"
+          class="btn btn-success"
+          onclick="ParkingSystem.confirmExitFromModal()"
+        >
+          Process Exit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Attach handlers when DOM is ready
+  document.addEventListener("DOMContentLoaded", function () {
+    // Exit & Pay button handlers
+    const exitBtns = document.querySelectorAll(".open-exit-btn");
+    exitBtns.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const ticketId = this.dataset.ticketId;
+        if (window.ParkingSystem && window.ParkingSystem.openExitModal) {
+          window.ParkingSystem.openExitModal(parseInt(ticketId, 10));
+        } else {
+          console.error("ParkingSystem.openExitModal not available");
+        }
+      });
+    });
+
+    // Swap Spot button handlers
+    const swapBtns = document.querySelectorAll(".open-swap-btn");
+    swapBtns.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const ticketId = this.dataset.ticketId;
+        const lotId = this.dataset.lotId || null;
+        const current = this.dataset.currentSpot || "";
+        if (window.ParkingSystem && window.ParkingSystem.openSwapModal) {
+          window.ParkingSystem.openSwapModal(
+            parseInt(ticketId, 10),
+            lotId ? parseInt(lotId, 10) : null,
+            current
+          );
+        } else {
+          console.error("ParkingSystem.openSwapModal not available");
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

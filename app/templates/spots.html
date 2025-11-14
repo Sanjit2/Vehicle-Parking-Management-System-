@@ -1,0 +1,46 @@
+{% extends 'base.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Parking Spots</h1>
+  <a class="btn btn-primary" href="/spots/new">Add Spot</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Number</th>
+      <th>Type</th>
+      <th>Lot</th>
+      <th>Occupied</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in spots %}
+    <tr>
+      <td>{{ s.SpotID }}</td>
+      <td>{{ s.SpotNumber }}</td>
+      <td>{{ s.SpotType }}</td>
+      <td>{{ s.LotID }}</td>
+      <td>{{ 'Yes' if s.IsOccupied else 'No' }}</td>
+      <td class="text-nowrap">
+        <a
+          class="btn btn-sm btn-outline-secondary"
+          href="/spots/{{ s.SpotID }}/edit"
+          >Edit</a
+        >
+        <form
+          method="post"
+          action="/spots/{{ s.SpotID }}/delete"
+          class="d-inline"
+          onsubmit="return confirm('Delete spot {{ s.SpotNumber }}?')"
+        >
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+

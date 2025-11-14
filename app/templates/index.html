@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Parking Management{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">Dashboard</h1>
+  <a class="btn btn-primary" href="/tickets/new">
+    <i class="bi bi-plus-circle me-1"></i>New Ticket
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+        <h4 class="mt-2 mb-1">{{ drivers_count }}</h4>
+        <p class="text-muted mb-0">Drivers</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-car-front text-success" style="font-size: 2rem;"></i>
+        <h4 class="mt-2 mb-1">{{ vehicles_count }}</h4>
+        <p class="text-muted mb-0">Vehicles</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-ticket text-warning" style="font-size: 2rem;"></i>
+        <h4 class="mt-2 mb-1">{{ tickets_today }}</h4>
+        <p class="text-muted mb-0">Today's Tickets</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
+        <h4 class="mt-2 mb-1">{{ tickets_unpaid }}</h4>
+        <p class="text-muted mb-0">Unpaid</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Tickets (Last 7 Days)</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="ticketsChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Revenue</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-6 text-center">
+            <small class="text-muted">Today</small>
+            <div class="h6">₹{{ '%.2f'|format(revenue_today) }}</div>
+          </div>
+          <div class="col-6 text-center">
+            <small class="text-muted">This Month</small>
+            <div class="h6">₹{{ '%.2f'|format(revenue_month) }}</div>
+          </div>
+        </div>
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Parking Lot Occupancy</h5>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for o in occupancy %}
+      <div class="col-md-4">
+        <div class="border rounded p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>{{ o.lotName }}</strong>
+            <span class="badge bg-{{ (o.total - o.occupied) <= 5 and 'danger' or 'success' }}">
+              {{ o.total - o.occupied }} free
+            </span>
+          </div>
+          <div class="progress mb-2">
+            <div class="progress-bar" style="width: {{ (o.occupied / (o.total or 1)) * 100 }}%"></div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">{{ o.occupied }} / {{ o.total }} occupied</small>
+            <small class="text-muted">{{ '%.1f'|format((o.occupied / (o.total or 1)) * 100) }}%</small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Alerts</h5>
+      </div>
+      <div class="card-body">
+        {% if alerts_tickets|length == 0 %}
+        <p class="text-muted mb-0">No alerts</p>
+        {% else %}
+        {% for t in alerts_tickets %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
+          <div>
+            <strong>Ticket #{{ t.TicketID }}</strong> - {{ t.LicensePlate }}
+            <small class="text-muted d-block">{{ t.EntryTime }}</small>
+          </div>
+          <span class="badge bg-warning">Unpaid</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Quick Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a class="btn btn-primary" href="/tickets/new">New Ticket</a>
+          <a class="btn btn-outline-secondary" href="/vehicles/new">Add Vehicle</a>
+          <a class="btn btn-outline-secondary" href="/drivers/new">Add Driver</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Recent Tickets</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Plate</th>
+                <th>Entry</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in recent_tickets %}
+              <tr>
+                <td>{{ t.TicketID }}</td>
+                <td>{{ t.LicensePlate }}</td>
+                <td>{{ t.EntryTime }}</td>
+                <td><span class="badge bg-{{ 'success' if t.PaymentStatus == 'Paid' else 'warning' }}">{{ t.PaymentStatus }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Recent Payments</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Ticket</th>
+                <th>Amount</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in recent_payments %}
+              <tr>
+                <td>{{ p.PaymentID }}</td>
+                <td>{{ p.TicketID }}</td>
+                <td>₹{{ '%.2f'|format(p.Amount) }}</td>
+                <td>{{ p.PaymentTimestamp }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  const ticketsData = {{ tickets_per_day|tojson }};
+  const revenueData = {{ revenue_per_day|tojson }};
+  const tLabels = ticketsData.map(d => d[0]);
+  const tValues = ticketsData.map(d => d[1]);
+  const rLabels = revenueData.map(d => d[0]);
+  const rValues = revenueData.map(d => d[1]);
+
+  const tc = document.getElementById('ticketsChart');
+  if (tc && window.Chart) {
+    new Chart(tc, {
+      type: 'line',
+      data: {
+        labels: tLabels,
+        datasets: [{ label: 'Tickets', data: tValues, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.2)', tension: .3 }]
+      },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+  }
+  const rc = document.getElementById('revenueChart');
+  if (rc && window.Chart) {
+    new Chart(rc, {
+      type: 'bar',
+      data: {
+        labels: rLabels,
+        datasets: [{ label: 'Revenue', data: rValues, backgroundColor: 'rgba(25,135,84,.6)' }]
+      },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+  }
+</script>
+{% endblock %}

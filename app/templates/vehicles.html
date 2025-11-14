@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Vehicles - Parking Management{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">Vehicles</h1>
+  <a class="btn btn-primary" href="/vehicles/new">
+    <i class="bi bi-car-front me-1"></i>Add Vehicle
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Plate</th>
+            <th>Type</th>
+            <th>Model</th>
+            <th>Colour</th>
+            <th>Driver</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td>{{ v.LicensePlate }}</td>
+            <td>{{ v.VehicleType }}</td>
+            <td>{{ v.Model or '-' }}</td>
+            <td>{{ v.Colour or '-' }}</td>
+            <td>{{ v.DriverID or '-' }}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-primary" href="/vehicles/{{ v.LicensePlate }}/edit">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="/vehicles/{{ v.LicensePlate }}/delete" class="d-inline" 
+                    onsubmit="return confirm('Delete {{ v.LicensePlate }}?')">
+                <button class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+.vehicle-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--success-color), #047857);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #dee2e6;
+}
+</style>
+
+<script>
+// Simple search functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+  const searchTerm = this.value.toLowerCase();
+  const tableRows = document.querySelectorAll('#vehiclesTable tbody tr');
+  
+  tableRows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(searchTerm) ? '' : 'none';
+  });
+});
+</script>
+
+{% endblock %}
+
+

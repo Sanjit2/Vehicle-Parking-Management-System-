@@ -1,0 +1,48 @@
+{% extends 'base.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Parking Rates</h1>
+  <a class="btn btn-primary" href="/rates/new">Add Rate</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Per Hour</th>
+      <th>Vehicle</th>
+      <th>Spot</th>
+      <th>Grace (min)</th>
+      <th>Lot</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rates %}
+    <tr>
+      <td>{{ r.RateID }}</td>
+      <td>{{ r.RatePerHour }}</td>
+      <td>{{ r.VehicleType }}</td>
+      <td>{{ r.SpotType }}</td>
+      <td>{{ r.GracePerMinute }}</td>
+      <td>{{ r.LotID or '-' }}</td>
+      <td class="text-nowrap">
+        <a
+          class="btn btn-sm btn-outline-secondary"
+          href="/rates/{{ r.RateID }}/edit"
+          >Edit</a
+        >
+        <form
+          method="post"
+          action="/rates/{{ r.RateID }}/delete"
+          class="d-inline"
+          onsubmit="return confirm('Delete rate #{{ r.RateID }}?')"
+        >
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+

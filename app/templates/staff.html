@@ -1,0 +1,46 @@
+{% extends 'base.html' %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Staff</h1>
+  <a class="btn btn-primary" href="/staff/new">Add Staff</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Username</th>
+      <th>Role</th>
+      <th>Lot</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in staff %}
+    <tr>
+      <td>{{ s.StaffID }}</td>
+      <td>{{ s.FirstName }} {{ s.LastName or '' }}</td>
+      <td>{{ s.Username }}</td>
+      <td>{{ s.Role }}</td>
+      <td>{{ s.LotID or '-' }}</td>
+      <td class="text-nowrap">
+        <a
+          class="btn btn-sm btn-outline-secondary"
+          href="/staff/{{ s.StaffID }}/edit"
+          >Edit</a
+        >
+        <form
+          method="post"
+          action="/staff/{{ s.StaffID }}/delete"
+          class="d-inline"
+          onsubmit="return confirm('Delete staff {{ s.Username }}?')"
+        >
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+

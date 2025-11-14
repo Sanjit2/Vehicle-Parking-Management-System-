@@ -1,0 +1,97 @@
+{% extends 'base.html' %} {% block title %}Drivers - Parking Management{%
+endblock %} {% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">Drivers</h1>
+  <a class="btn btn-primary" href="/drivers/new">
+    <i class="bi bi-person-plus me-1"></i>Add Driver
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Total Spent</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in drivers %}
+          <tr>
+            <td>{{ d.DriverID }}</td>
+            <td>{{ d.FirstName }} {{ d.LastName or '' }}</td>
+            <td>{{ d.PhoneNumber }}</td>
+            <td>{{ d.Email or '-' }}</td>
+            <td>
+              <span
+                class="badge bg-info text-dark driver-total-spent"
+                data-driver-id="{{ d.DriverID }}"
+              >
+                Loading...
+              </span>
+            </td>
+            <td>
+              <a
+                class="btn btn-sm btn-outline-primary"
+                href="/drivers/{{ d.DriverID }}/edit"
+              >
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form
+                method="post"
+                action="/drivers/{{ d.DriverID }}/delete"
+                class="d-inline"
+                onsubmit="return confirm('Delete {{ d.FirstName }}?')"
+              >
+                <button class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  // Fetch total spent for each driver using the MySQL function fn_GetDriverTotalSpent
+  document.addEventListener("DOMContentLoaded", async function () {
+    const badges = document.querySelectorAll(".driver-total-spent");
+
+    for (const badge of badges) {
+      const driverId = badge.dataset.driverId;
+      try {
+        const res = await fetch(`/api/driver-total-spent/${driverId}`);
+        const json = await res.json();
+
+        if (json.status === "ok") {
+          const amount = json.totalSpent || 0;
+          badge.textContent = "₹" + amount.toFixed(2);
+          badge.classList.remove("bg-info");
+          badge.classList.add(amount > 0 ? "bg-success" : "bg-secondary");
+        } else {
+          badge.textContent = "Error";
+          badge.classList.remove("bg-info");
+          badge.classList.add("bg-danger");
+        }
+      } catch (err) {
+        console.error("Failed to fetch total spent for driver", driverId, err);
+        badge.textContent = "N/A";
+        badge.classList.remove("bg-info");
+        badge.classList.add("bg-secondary");
+      }
+    }
+  });
+</script>
+{% endblock %}
